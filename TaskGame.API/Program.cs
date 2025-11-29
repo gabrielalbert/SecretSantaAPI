@@ -1,8 +1,11 @@
 using System;
+using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Cryptography;
 using TaskGame.API.Data;
 using TaskGame.API.Repositories;
 using TaskGame.API.Services;
@@ -57,6 +60,7 @@ builder.Services.AddScoped<IEventInvitationRepository, EventInvitationRepository
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key not configured");
+var signingKeyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(secretKey));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -73,7 +77,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+        IssuerSigningKey = new SymmetricSecurityKey(signingKeyBytes)
     };
 });
 
@@ -105,6 +109,14 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ITaskAssignmentService, TaskAssignmentService>();
 
+var dataProtectionKeysPath = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS_PATH");
+if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
+{
+    Directory.CreateDirectory(dataProtectionKeysPath);
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+}
+
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(port))
 {
@@ -114,7 +126,10 @@ if (!string.IsNullOrWhiteSpace(port))
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
