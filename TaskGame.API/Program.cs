@@ -1,11 +1,8 @@
 using System;
-using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Security.Cryptography;
 using TaskGame.API.Data;
 using TaskGame.API.Repositories;
 using TaskGame.API.Services;
@@ -60,7 +57,11 @@ builder.Services.AddScoped<IEventInvitationRepository, EventInvitationRepository
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key not configured");
-var signingKeyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(secretKey));
+var signingKeyBytes = Encoding.UTF8.GetBytes(secretKey);
+if (signingKeyBytes.Length < 32)
+{
+    throw new InvalidOperationException("JWT Secret Key must be at least 32 bytes when encoded as UTF-8 to support HS256.");
+}
 
 builder.Services.AddAuthentication(options =>
 {
@@ -108,14 +109,6 @@ builder.Services.AddCors(options =>
 // Register services
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ITaskAssignmentService, TaskAssignmentService>();
-
-var dataProtectionKeysPath = Environment.GetEnvironmentVariable("DATA_PROTECTION_KEYS_PATH");
-if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
-{
-    Directory.CreateDirectory(dataProtectionKeysPath);
-    builder.Services.AddDataProtection()
-        .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
-}
 
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(port))
