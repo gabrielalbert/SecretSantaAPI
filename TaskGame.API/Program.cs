@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -103,6 +104,12 @@ builder.Services.AddCors(options =>
 // Register services
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ITaskAssignmentService, TaskAssignmentService>();
+
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+{
+    builder.WebHost.UseUrls($"http://*:{port}");
+}
 
 var app = builder.Build();
 app.UseSwagger();
