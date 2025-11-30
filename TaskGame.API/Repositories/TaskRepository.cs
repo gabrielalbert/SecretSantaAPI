@@ -17,8 +17,8 @@ public class TaskRepository : ITaskRepository
     {
         const string sql = @"
             SELECT ""Id"", ""Title"", ""Description"", ""CreatedAt"", ""DueDate"", 
-                   ""CreatedByUserId"", ""Priority"", ""MaxDailyAssignments""
-            FROM ""Tasks""
+                   ""CreatedByUserId"", ""Priority"", ""MaxDailyAssignments"", ""EventId""
+            FROM ""Tasks""            
             WHERE ""Id"" = @Id";
 
         using var connection = _dbConnection.CreateConnection();
@@ -29,7 +29,7 @@ public class TaskRepository : ITaskRepository
     {
         const string sql = @"
             SELECT ""Id"", ""Title"", ""Description"", ""CreatedAt"", ""DueDate"", 
-                   ""CreatedByUserId"", ""Priority"", ""MaxDailyAssignments""
+                   ""CreatedByUserId"", ""Priority"", ""MaxDailyAssignments"", ""EventId""
             FROM ""Tasks""
             WHERE ""CreatedByUserId"" = @CreatorId
             ORDER BY ""CreatedAt"" DESC";
@@ -43,9 +43,9 @@ public class TaskRepository : ITaskRepository
     {
         const string sql = @"
             INSERT INTO ""Tasks"" (""Id"", ""Title"", ""Description"", ""CreatedAt"", ""DueDate"", 
-                                  ""CreatedByUserId"", ""Priority"", ""MaxDailyAssignments"")
+                                  ""CreatedByUserId"", ""Priority"", ""MaxDailyAssignments"", ""EventId"")
             VALUES (@Id, @Title, @Description, @CreatedAt, @DueDate, 
-                    @CreatedByUserId, @Priority, @MaxDailyAssignments)
+                    @CreatedByUserId, @Priority, @MaxDailyAssignments,@EventId)
             RETURNING ""Id""";
 
         using var connection = _dbConnection.CreateConnection();

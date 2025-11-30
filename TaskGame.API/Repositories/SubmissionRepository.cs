@@ -130,7 +130,7 @@ public class SubmissionRepository : ISubmissionRepository
                    t.""CreatedByUserId"", t.""Priority"", t.""MaxDailyAssignments"", t.""EventId"",
                    u.""Id"", u.""Username"", u.""Email"",
                    creator.""Id"", creator.""Username"", creator.""Email"",
-                   e.""Id"", e.""Name"",
+                   e.""Id"", e.""Name"",e.""Description"", e.""StartDate"", e.""EndDate"",
                    sf.""Id"", sf.""TaskSubmissionId"", sf.""FileName"", sf.""FilePath"", 
                    sf.""ContentType"", sf.""FileSize"", sf.""UploadedAt""
             FROM ""TaskSubmissions"" ts

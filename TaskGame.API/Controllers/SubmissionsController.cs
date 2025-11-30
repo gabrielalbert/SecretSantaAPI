@@ -36,6 +36,8 @@ public class SubmissionsController : ControllerBase
         return Guid.Parse(userIdClaim ?? throw new UnauthorizedAccessException());
     }
 
+    [RequestSizeLimit(500 * 1024 * 1024)] // 500 MB
+    [RequestFormLimits(MultipartBodyLengthLimit = 500 * 1024 * 1024)]
     // Submit a task with files
     [HttpPost]
     public async Task<ActionResult> SubmitTask([FromForm] Guid taskAssignmentId, [FromForm] string? notes, [FromForm] List<IFormFile>? files)

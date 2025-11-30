@@ -10,6 +10,7 @@ public class TaskAssignment
 
     [Required]
     public Guid TaskId { get; set; }
+    public Guid EventId { get; set; }
 
     [ForeignKey("TaskId")]
     public virtual TaskItem Task { get; set; } = null!;
@@ -28,6 +29,8 @@ public class TaskAssignment
 
     // Navigation properties
     public virtual TaskSubmission? Submission { get; set; }
+
+    public string EventName { get; set; } = string.Empty;
 }
 
 public enum TaskStatus

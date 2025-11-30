@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using TaskGame.API.DTOs;
 using TaskGame.API.Models;
 using TaskGame.API.Repositories;
@@ -17,18 +19,21 @@ public class TasksController : ControllerBase
     private readonly ITaskRepository _taskRepository;
     private readonly ITaskAssignmentRepository _assignmentRepository;
     private readonly ISubmissionRepository _submissionRepository;
+    private readonly IEventRepository _eventRepository;
     private readonly ITaskAssignmentService _assignmentService;
 
     public TasksController(
         ITaskRepository taskRepository,
         ITaskAssignmentRepository assignmentRepository,
         ISubmissionRepository submissionRepository,
+        IEventRepository eventRepository,
         ITaskAssignmentService assignmentService)
     {
         _taskRepository = taskRepository;
         _assignmentRepository = assignmentRepository;
         _submissionRepository = submissionRepository;
         _assignmentService = assignmentService;
+        _eventRepository = eventRepository;
     }
 
     private Guid GetCurrentUserId()
@@ -46,6 +51,7 @@ public class TasksController : ControllerBase
         var task = new TaskItem
         {
             Id = Guid.NewGuid(),
+            EventId = createTaskDto.EventId,
             Title = createTaskDto.Title,
             Description = createTaskDto.Description,
             DueDate = createTaskDto.DueDate,
@@ -55,6 +61,7 @@ public class TasksController : ControllerBase
         };
 
         await _taskRepository.CreateAsync(task);
+        var assignment = await _assignmentService.AssignTaskRandomlyAsync(task.Id,userId);
 
         return Ok(new TaskDto
         {
@@ -63,7 +70,8 @@ public class TasksController : ControllerBase
             Description = task.Description,
             CreatedAt = task.CreatedAt,
             DueDate = task.DueDate,
-            Priority = (int)task.Priority
+            Priority = (int)task.Priority,
+            EventId = createTaskDto.EventId
         });
     }
 
@@ -82,7 +90,8 @@ public class TasksController : ControllerBase
             Description = t.Description,
             CreatedAt = t.CreatedAt,
             DueDate = t.DueDate,
-            Priority = (int)t.Priority
+            Priority = (int)t.Priority,
+            EventId = t.EventId.Value
         }).ToList();
 
         return Ok(taskDtos);
@@ -101,7 +110,7 @@ public class TasksController : ControllerBase
         if (task.CreatedByUserId != userId)
             return Forbid();
 
-        var assignment = await _assignmentService.AssignTaskRandomlyAsync(taskId);
+        var assignment = await _assignmentService.AssignTaskRandomlyAsync(taskId, task.CreatedByUserId);
 
         if (assignment == null)
             return BadRequest(new { message = "Unable to assign task. No eligible users or daily limit reached." });
@@ -117,6 +126,8 @@ public class TasksController : ControllerBase
 
         var assignments = await _assignmentRepository.GetByUserIdAsync(userId);
 
+        var events = await _eventRepository.GetAllAsync();
+        
         var assignmentDtos = assignments.Select(ta => new TaskAssignmentDto
         {
             Id = ta.Id,
@@ -126,7 +137,9 @@ public class TasksController : ControllerBase
             AssignedAt = ta.AssignedAt,
             Status = ta.Status.ToString(),
             DueDate = ta.Task.DueDate,
-            Priority = (int)ta.Task.Priority
+            Priority = (int)ta.Task.Priority,
+            EventId = ta.Task.EventId.Value,
+            EventName = events.Where(e=>e.Id==ta.Task.EventId).ToList().FirstOrDefault().Name
         }).ToList();
 
         return Ok(assignmentDtos);
@@ -166,6 +179,7 @@ public class TasksController : ControllerBase
             SubmittedAt = ts.SubmittedAt,
             Notes = ts.Notes,
             EventName = ts.TaskAssignment.Task.Event?.Name,
+            EventEndDate = ts.TaskAssignment.Task.Event?.EndDate,
             SubmittedByUsername = ts.SubmittedBy.Username,
             CreatedByUserId = ts.TaskAssignment.Task.CreatedByUserId,
             CreatedByUsername = ts.TaskAssignment.Task.CreatedBy?.Username ?? string.Empty,

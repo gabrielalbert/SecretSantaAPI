@@ -46,9 +46,9 @@ public class TaskAssignmentRepository : ITaskAssignmentRepository
             SELECT ta.""Id"", ta.""TaskId"", ta.""AssignedToUserId"", ta.""AssignedAt"", 
                    ta.""Status"", ta.""CompletedAt"",
                    t.""Id"", t.""Title"", t.""Description"", t.""CreatedAt"", t.""DueDate"",
-                   t.""CreatedByUserId"", t.""Priority"", t.""MaxDailyAssignments""
+                   t.""CreatedByUserId"", t.""Priority"", t.""MaxDailyAssignments"", t.""EventId""
             FROM ""TaskAssignments"" ta
-            INNER JOIN ""Tasks"" t ON ta.""TaskId"" = t.""Id""
+            INNER JOIN ""Tasks"" t ON ta.""TaskId"" = t.""Id""            
             WHERE ta.""AssignedToUserId"" = @UserId
             ORDER BY ta.""AssignedAt"" DESC";
 
@@ -57,7 +57,7 @@ public class TaskAssignmentRepository : ITaskAssignmentRepository
             sql,
             (assignment, task) =>
             {
-                assignment.Task = task;
+                assignment.Task = task;                
                 return assignment;
             },
             new { UserId = userId },
@@ -73,7 +73,7 @@ public class TaskAssignmentRepository : ITaskAssignmentRepository
             SELECT ta.""Id"", ta.""TaskId"", ta.""AssignedToUserId"", ta.""AssignedAt"", 
                    ta.""Status"", ta.""CompletedAt"",
                    t.""Id"", t.""Title"", t.""Description"", t.""CreatedAt"", t.""DueDate"",
-                   t.""CreatedByUserId"", t.""Priority"", t.""MaxDailyAssignments""
+                   t.""CreatedByUserId"", t.""Priority"", t.""MaxDailyAssignments"", t.""EventId""
             FROM ""TaskAssignments"" ta
             INNER JOIN ""Tasks"" t ON ta.""TaskId"" = t.""Id""
             WHERE ta.""TaskId"" = @TaskId
