@@ -6,7 +6,7 @@ public interface ISubmissionRepository
 {
     Task<TaskSubmission?> GetByIdAsync(Guid id);
     Task<TaskSubmission?> GetByAssignmentIdAsync(Guid assignmentId);
-    Task<List<TaskSubmission>> GetAllCompletedAsync();
+    Task<List<TaskSubmission>> GetAllCompletedAsync(Guid userId);
     Task<Guid> CreateAsync(TaskSubmission submission);
     Task<Guid> CreateFileAsync(SubmissionFile file);
     Task<SubmissionFile?> GetFileByIdAsync(Guid fileId);

@@ -121,7 +121,7 @@ public class SubmissionRepository : ISubmissionRepository
         return submission;
     }
 
-    public async Task<List<TaskSubmission>> GetAllCompletedAsync()
+    public async Task<List<TaskSubmission>> GetAllCompletedAsync(Guid userId)
     {
         const string sql = @"
             SELECT ts.""Id"", ts.""TaskAssignmentId"", ts.""SubmittedByUserId"", ts.""Notes"", ts.""SubmittedAt"",
@@ -138,9 +138,10 @@ public class SubmissionRepository : ISubmissionRepository
             INNER JOIN ""Tasks"" t ON ta.""TaskId"" = t.""Id""
             INNER JOIN ""Users"" u ON ts.""SubmittedByUserId"" = u.""Id""
             INNER JOIN ""Users"" creator ON t.""CreatedByUserId"" = creator.""Id""
-            LEFT JOIN ""Events"" e ON t.""EventId"" = e.""Id""
+            INNER JOIN ""EventInvitations"" ei ON u.""Id"" = ei.""UserId"" 
+            LEFT JOIN ""Events"" e ON ei.""EventId"" = e.""Id""            
             LEFT JOIN ""SubmissionFiles"" sf ON ts.""Id"" = sf.""TaskSubmissionId""
-            WHERE ta.""Status"" = 3
+            WHERE ta.""Status"" = 3 AND ei.""UserId"" = @userId
             ORDER BY ts.""SubmittedAt"" DESC";
 
         using var connection = _dbConnection.CreateConnection();
@@ -172,6 +173,7 @@ public class SubmissionRepository : ISubmissionRepository
 
                 return submissionEntry;
             },
+            new { userId = userId },
             splitOn: "Id,Id,Id,Id,Id,Id"
         );
 

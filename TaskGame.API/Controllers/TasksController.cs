@@ -169,7 +169,8 @@ public class TasksController : ControllerBase
     [HttpGet("completed")]
     public async Task<ActionResult<List<TaskResultDto>>> GetCompletedTasks()
     {
-        var completedSubmissions = await _submissionRepository.GetAllCompletedAsync();
+         var userId = GetCurrentUserId();
+        var completedSubmissions = await _submissionRepository.GetAllCompletedAsync(userId);
 
         var results = completedSubmissions.Select(ts => new TaskResultDto
         {
