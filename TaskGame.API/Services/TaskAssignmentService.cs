@@ -52,7 +52,7 @@ public class TaskAssignmentService : ITaskAssignmentService
         //var selectedUser = eligibleUsers[_random.Next(eligibleUsers.Count)];
 
         var assignedUserId = eventDetails.Invitations.Where(inv => inv.EventId == eventDetails.Id && inv.UserId == createdUserId).ToList()
-            .FirstOrDefault().ChrisChildUserId;
+            .FirstOrDefault().ChrisMaUserId;
 
         // Create assignment
         var assignment = new TaskAssignment
