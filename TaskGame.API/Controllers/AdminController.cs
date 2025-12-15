@@ -227,9 +227,10 @@ public class AdminController : ControllerBase
         // Create random role mappings for each user
         var random = new Random();
         var userIdsList = createDto.UserIds.ToList();
-
+        
         foreach (var invitedUserId in userIdsList)
-        {
+        {            
+
             // Randomly select Chris Ma and Chris Child from other users
             var otherUsers = userIdsList.Where(id => id != invitedUserId).ToList();
             
@@ -240,9 +241,10 @@ public class AdminController : ControllerBase
             
             // For Chris Child, try to pick someone different from Chris Ma if possible
             var childCandidates = otherUsers.Where(id => id != chrisMaUserId).ToList();
-            var chrisChildUserId = childCandidates.Any() 
-                ? childCandidates[random.Next(childCandidates.Count)]
-                : otherUsers[random.Next(otherUsers.Count)];
+            //var chrisChildUserId = childCandidates.Any() 
+            //    ? childCandidates[random.Next(childCandidates.Count)]
+            //    : otherUsers[random.Next(otherUsers.Count)];
+                       
 
             var invitation = new EventInvitation
             {
@@ -250,12 +252,14 @@ public class AdminController : ControllerBase
                 EventId = evt.Id,
                 UserId = invitedUserId,
                 ChrisMaUserId = chrisMaUserId,
-                ChrisChildUserId = chrisChildUserId,
+                ChrisChildUserId = invitedUserId,
                 InvitedAt = DateTime.UtcNow,
                 Status = InvitationStatus.Pending
             };
 
             await _invitationRepository.CreateAsync(invitation);
+
+            userIdsList = userIdsList.Where(id => id != chrisMaUserId).ToList();
         }
 
         return Ok(new EventDto

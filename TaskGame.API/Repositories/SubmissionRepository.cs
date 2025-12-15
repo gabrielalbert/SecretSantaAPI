@@ -133,15 +133,15 @@ public class SubmissionRepository : ISubmissionRepository
                    e.""Id"", e.""Name"",e.""Description"", e.""StartDate"", e.""EndDate"",
                    sf.""Id"", sf.""TaskSubmissionId"", sf.""FileName"", sf.""FilePath"", 
                    sf.""ContentType"", sf.""FileSize"", sf.""UploadedAt""
-            FROM ""TaskSubmissions"" ts
-            INNER JOIN ""TaskAssignments"" ta ON ts.""TaskAssignmentId"" = ta.""Id""
-            INNER JOIN ""Tasks"" t ON ta.""TaskId"" = t.""Id""
-            INNER JOIN ""Users"" u ON ts.""SubmittedByUserId"" = u.""Id""
-            INNER JOIN ""Users"" creator ON t.""CreatedByUserId"" = creator.""Id""
-            INNER JOIN ""EventInvitations"" ei ON u.""Id"" = ei.""UserId"" 
-            LEFT JOIN ""Events"" e ON ei.""EventId"" = e.""Id""            
-            LEFT JOIN ""SubmissionFiles"" sf ON ts.""Id"" = sf.""TaskSubmissionId""
-            WHERE ta.""Status"" = 3 AND ei.""UserId"" = @userId
+            FROM ""TaskAssignments"" ta
+				   INNER JOIN ""Tasks"" t ON ta.""TaskId"" = t.""Id"" 
+				   INNER JOIN ""EventInvitations"" ei ON ei.""UserId"" = t.""CreatedByUserId""  
+				   INNER JOIN ""Events"" e ON ei.""EventId"" = e.""Id"" 
+				   INNER JOIN ""Users"" creator ON t.""CreatedByUserId"" = creator.""Id""
+				   INNER JOIN ""Users"" u ON ta.""AssignedToUserId"" = u.""Id""
+				   LEFT OUTER JOIN ""TaskSubmissions"" ts ON ts.""TaskAssignmentId"" = ta.""Id""
+            LEFT OUTER JOIN ""SubmissionFiles"" sf ON ts.""Id"" = sf.""TaskSubmissionId""
+            WHERE  ei.""UserId"" = @userId
             ORDER BY ts.""SubmittedAt"" DESC";
 
         using var connection = _dbConnection.CreateConnection();
