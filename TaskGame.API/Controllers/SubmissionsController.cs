@@ -128,6 +128,7 @@ public class SubmissionsController : ControllerBase
         if (file == null)
             return NotFound(new { message = "File not found" });
 
+        Console.WriteLine($"Attempting to access file at path: {file.FilePath}");
         if (!System.IO.File.Exists(file.FilePath))
             return NotFound(new { message = "Physical file not found" });
 
