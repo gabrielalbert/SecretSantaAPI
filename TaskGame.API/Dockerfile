@@ -15,9 +15,10 @@ WORKDIR /app
 
 EXPOSE 58978
 EXPOSE 58977
-
-COPY --from=build /app/publish ./
+USER root
 # Create uploads directory
 RUN mkdir -p /app/uploads
+COPY --from=build /app/publish ./
+
 
 ENTRYPOINT ["dotnet", "TaskGame.API.dll"]
